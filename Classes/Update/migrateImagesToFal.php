@@ -178,6 +178,13 @@ You have been warned ;-)';
                                 $this->insertFileReference($file, $newsRecord, $imagecaptions[$k], $imagealttexts[$k], $imagetitletexts[$k]);
                             }
                             $existingImagesCount++;
+                        } 
+                        elseif (file_exists($pathSite . $targetFolder . '/' . $image)) {
+                            $file = $folder->addFile($pathSite . $targetFolder . '/' . $image, null, DuplicationBehavior::REPLACE);
+                            if ($file instanceof File) {
+                                $this->insertFileReference($file, $newsRecord, $imagecaptions[$k], $imagealttexts[$k], $imagetitletexts[$k]);
+                            }
+                            $existingImagesCount++;
                         }
                     }
                     if ($existingImagesCount > 0) {
