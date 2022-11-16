@@ -749,16 +749,17 @@ class TtNews extends AbstractPlugin
                 $prefix_display = 'displayList';
                 $templateName = 'TEMPLATE_LIST';
 
+
                 // Make markers for the searchform
                 $searchMarkers = array(
                     '###FORM_URL###' => $this->pi_linkTP_keepPIvars_url(array('pointer' => null, 'cat' => null), 0, 1,
                         $this->config['searchPid']),
-                    '###SWORDS###' => htmlspecialchars($this->piVars['swords']),
+                    '###SWORDS###' => htmlspecialchars($this->piVars['swords'] ?? ''),
                     '###SEARCH_BUTTON###' => $this->pi_getLL('searchButtonLabel')
                 );
 
                 // Hook for any additional form fields
-                if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['tt_news']['additionalFormSearchFields'])) {
+                if (isset($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['tt_news']) && is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['tt_news']['additionalFormSearchFields'])) {
                     foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['tt_news']['additionalFormSearchFields'] as $_classRef) {
                         $_procObj = GeneralUtility::makeInstance($_classRef);
                         $searchMarkers = $_procObj->additionalFormSearchFields($this, $searchMarkers);
@@ -775,7 +776,7 @@ class TtNews extends AbstractPlugin
                 unset($searchSub);
 
                 // do the search and add the result to the $where string
-                if ($this->piVars['swords']) {
+                if (isset($this->piVars['swords'])) {
                     $where = $this->searchWhere(trim($this->piVars['swords']));
                     $theCode = 'SEARCH';
                 } else {
@@ -788,7 +789,7 @@ class TtNews extends AbstractPlugin
                 $prefix_display = 'displayXML';
                 // $this->arcExclusive = -1; // Only latest, non archive news
                 $this->allowCaching = $this->conf['displayXML.']['xmlCaching'];
-                $this->config['limit'] = $this->conf['displayXML.']['xmlLimit'] ? $this->conf['displayXML.']['xmlLimit'] : $this->config['limit'];
+                $this->config['limit'] = $this->conf['displayXML.']['xmlLimit'] ?: $this->config['limit'];
 
                 switch ($this->conf['displayXML.']['xmlFormat']) {
                     case 'rss091' :
@@ -1111,15 +1112,15 @@ class TtNews extends AbstractPlugin
             }
             $this->pi_lowerThan = $highestVal + 1;
         }
-
-
-        // hotfix AbstractPlugin not php8.1 compatible
+	
+	    // hotfix AbstractPlugin not php8.1 compatible
         // https://review.typo3.org/c/Packages/TYPO3.CMS/+/76642
         if (!isset($this->piVars[$pointerName])) {
             $this->piVars[$pointerName] = 0;
         }
         // end hotfix
-        // render pagebrowser
+
+    	// render pagebrowser
         $markerArray['###BROWSE_LINKS###'] = $this->pi_list_browseresults($pbConf['showResultCount'],
             $pbConf['tableParams'] ?? null, $wrapArr, $pointerName, $pbConf['hscText']);
 
@@ -1203,7 +1204,7 @@ class TtNews extends AbstractPlugin
             // gets the option splitted config for this record
             if ($this->conf['enableOptionSplit'] && !empty($this->splitLConf[$cc])) {
                 $lConf = $this->splitLConf[$cc];
-                $lConf['subheader_stdWrap.']['crop'] = ($lConf['subheader_stdWrap.']['crop'] ?? '') . $cropSuffix;
+                $lConf['subheader_stdWrap.']['crop'] .= $cropSuffix;
 
             }
 
@@ -2087,7 +2088,7 @@ class TtNews extends AbstractPlugin
         //		debug($markerArray, ' ('.__CLASS__.'::'.__FUNCTION__.')', __LINE__, __FILE__, 3);
 
         // Adds hook for processing of extra item markers
-        if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['tt_news']['extraItemMarkerHook'] ?? null)) {
+        if (isset($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['tt_news']) && is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['tt_news']['extraItemMarkerHook'])) {
             foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['tt_news']['extraItemMarkerHook'] as $_classRef) {
                 $_procObj = GeneralUtility::makeInstance($_classRef);
                 $markerArray = $_procObj->extraItemMarkerProcessor($markerArray, $row, $lConf, $this);
@@ -3684,7 +3685,7 @@ class TtNews extends AbstractPlugin
 
                     $pL = intval($this->piVars['pL']);
                     //selecting news for a certain day only
-                    if (intval($this->piVars['day'])) {
+                    if (intval($this->piVars['day'] ?? 0)) {
                         // = 24h, as pS always starts at the beginning of a day (00:00:00)
                         $pL = 86400;
                     }
@@ -4248,7 +4249,7 @@ class TtNews extends AbstractPlugin
         // pid_list is the pid/list of pids from where to fetch the news items.
         $pid_list = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'pages', 's_misc');
         $pid_list = $pid_list ? $pid_list : trim($this->cObj->stdWrap($this->conf['pid_list'],
-            $this->conf['pid_list.']));
+            $this->conf['pid_list.'] ?? null));
         $pid_list = $pid_list ? implode(',', GeneralUtility::intExplode(',', $pid_list)) : $this->tsfe->id;
 
         $recursive = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'recursive', 's_misc');
@@ -4562,14 +4563,15 @@ class TtNews extends AbstractPlugin
         }
 
         $piVarsArray['tt_news'] = $row['uid'];
-
-        // hotfix AbstractPlugin not php8.1 compatible
+	
+	    // hotfix AbstractPlugin not php8.1 compatible
         // https://review.typo3.org/c/Packages/TYPO3.CMS/+/76598
         if (!isset($this->conf['parent.']['addParams'])) {
             $this->conf['parent.']['addParams'] = '';
         }
         // end hotfix
-        $linkWrap = explode($this->token,
+
+    	$linkWrap = explode($this->token,
             $this->pi_linkTP_keepPIvars($this->token, $piVarsArray, $this->allowCaching, $this->conf['dontUseBackPid'],
                 $singlePid));
         $url = $this->cObj->lastTypoLinkUrl;
