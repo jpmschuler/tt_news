@@ -143,7 +143,7 @@ You have been warned ;-)';
                 LEFT JOIN sys_file_reference r 
                     ON r.uid_foreign = n.uid AND r.tablenames = \'tt_news\' AND r.fieldname = \'image\' AND r.deleted = 0
                 
-                WHERE n.image != \'\'
+                WHERE NOT(image > 0) AND image <> "" AND image <> "0"
                   AND n.deleted = 0
                   AND r.uid IS NULL
                  '
@@ -243,7 +243,7 @@ You have been warned ;-)';
                 LEFT JOIN sys_file_reference r 
                     ON r.uid_foreign = n.uid AND r.tablenames = \'tt_news\' AND r.fieldname = \'image\' AND r.deleted = 0
                 
-                WHERE n.image != \'\'
+                WHERE NOT(image > 0) AND image <> "" AND image <> "0"
                   AND n.deleted = 0
                   AND r.uid IS NULL
                  '
