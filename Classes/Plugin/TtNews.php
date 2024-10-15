@@ -3466,7 +3466,7 @@ class TtNews extends AbstractPlugin
                 if ($row['type'] != 1 && $row['type'] != 2) {
                     // only normal news
                     $catSPid = false;
-                    if ($row['sPidByCat'] && $this->conf['useSPidFromCategory']) {
+                    if (($row['sPidByCat'] ?? false) && ($this->conf['useSPidFromCategory'] ?? false)) {
                         $catSPid = $row['sPidByCat'];
                     }
                     $sPid = ($catSPid ?: $this->config['singlePid']);
