@@ -2791,7 +2791,7 @@ class TtNews extends AbstractPlugin
             $imageNum = $lConf['imageCount'] ?? 1;
             $imageNum = MathUtility::forceIntegerInRange($imageNum, 0, 100);
             $theImgCode = '';
-            $imgs = GeneralUtility::trimExplode(',', $row['image'], 1);
+            $imgs = GeneralUtility::trimExplode(',', $row['image'] ?? '', true);
             $imgsCaptions = explode(chr(10), (string)$row['imagecaption']);
             $imgsAltTexts = explode(chr(10), (string)$row['imagealttext']);
             $imgsTitleTexts = explode(chr(10), (string)$row['imagetitletext']);
