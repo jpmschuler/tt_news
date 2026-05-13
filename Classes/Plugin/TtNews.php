@@ -4274,7 +4274,7 @@ class TtNews extends AbstractPlugin
         // categoryModes are: 0=display all categories, 1=display selected categories, -1=display deselected categories
         $categoryMode = $this->pi_getFFvalue($this->cObj->data['pi_flexform'] ?? null, 'categoryMode', 'sDEF');
 
-        $this->config['categoryMode'] = $categoryMode ?: (int)($this->conf['categoryMode']);
+        $this->config['categoryMode'] = $categoryMode ?: (int)($this->conf['categoryMode'] ?? 0);
         // catselection holds only the uids of the categories selected by GETvars
         if ($this->piVars['cat'] ?? false) {
             // catselection holds only the uids of the categories selected by GETvars
@@ -4292,11 +4292,11 @@ class TtNews extends AbstractPlugin
         }
         $catExclusive = $this->pi_getFFvalue($this->cObj->data['pi_flexform'] ?? null, 'categorySelection', 'sDEF');
         $catExclusive = $catExclusive ?: trim((string)$this->cObj->stdWrap(
-            $this->conf['categorySelection'],
+            $this->conf['categorySelection'] ?? '',
             $this->conf['categorySelection.'] ?? false
         ));
         // ignore cat selection if categoryMode isn't set
-        $this->catExclusive = $this->config['categoryMode'] ? $catExclusive : 0;
+        $this->catExclusive = ($this->config['categoryMode'] ?? null) ? $catExclusive : 0;
 
         $this->catExclusive = $this->helpers->checkRecords($this->catExclusive);
         // store the actually selected categories because we need them for the comparison in categoryMode 2 and -2
