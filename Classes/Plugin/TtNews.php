@@ -480,7 +480,7 @@ class TtNews extends AbstractPlugin
             // Use new TypoScript parser for TYPO3 v13 compatibility
             $typoScriptStringFactory = GeneralUtility::makeInstance(TypoScriptStringFactory::class);
             $astBuilder = GeneralUtility::makeInstance(AstBuilder::class);
-
+            
             // Parse the flexform TypoScript
             $ast = $typoScriptStringFactory->parseFromString($flexformTyposcript, $astBuilder);
             $parsedConfig = $ast->toArray();
