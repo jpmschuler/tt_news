@@ -35,6 +35,7 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use RG\TtNews\Database\Database;
 use RG\TtNews\Helper\Helpers;
 use RG\TtNews\Menu\Catmenu;
+use RG\TtNews\PageTitle\TtNewsPageTitleProvider;
 use RG\TtNews\Utility\Div;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
@@ -483,7 +484,7 @@ class TtNews extends AbstractPlugin
             // Parse the flexform TypoScript
             $ast = $typoScriptStringFactory->parseFromString($flexformTyposcript, $astBuilder);
             $parsedConfig = $ast->toArray();
-            
+
             // Merge parsed config with existing conf
             $this->conf = array_replace_recursive($this->conf, $parsedConfig);
         }
@@ -1509,12 +1510,8 @@ class TtNews extends AbstractPlugin
 
             // set the title of the single view page to the title of the news record
             if ($this->conf['substitutePagetitle']) {
-
-                $this->tsfe->page['title'] = $row['title'];
-                // set pagetitle for indexed search to news title
-
-                // fixme: still needed ?
-                // $this->tsfe->indexedDocTitle = $row['title'];
+                $titleProvider = GeneralUtility::makeInstance(TtNewsPageTitleProvider::class);
+                $titleProvider->setTitle($row['title']);
             }
             if ($lConf['catOrderBy'] ?? false) {
                 $this->config['catOrderBy'] = $lConf['catOrderBy'];
@@ -2791,7 +2788,7 @@ class TtNews extends AbstractPlugin
             $imageNum = $lConf['imageCount'] ?? 1;
             $imageNum = MathUtility::forceIntegerInRange($imageNum, 0, 100);
             $theImgCode = '';
-            $imgs = GeneralUtility::trimExplode(',', $row['image'], 1);
+            $imgs = GeneralUtility::trimExplode(',', $row['image'] ?? '', true);
             $imgsCaptions = explode(chr(10), (string)$row['imagecaption']);
             $imgsAltTexts = explode(chr(10), (string)$row['imagealttext']);
             $imgsTitleTexts = explode(chr(10), (string)$row['imagetitletext']);
@@ -4277,7 +4274,7 @@ class TtNews extends AbstractPlugin
         // categoryModes are: 0=display all categories, 1=display selected categories, -1=display deselected categories
         $categoryMode = $this->pi_getFFvalue($this->cObj->data['pi_flexform'] ?? null, 'categoryMode', 'sDEF');
 
-        $this->config['categoryMode'] = $categoryMode ?: (int)($this->conf['categoryMode']);
+        $this->config['categoryMode'] = $categoryMode ?: (int)($this->conf['categoryMode'] ?? 0);
         // catselection holds only the uids of the categories selected by GETvars
         if ($this->piVars['cat'] ?? false) {
             // catselection holds only the uids of the categories selected by GETvars
@@ -4295,11 +4292,11 @@ class TtNews extends AbstractPlugin
         }
         $catExclusive = $this->pi_getFFvalue($this->cObj->data['pi_flexform'] ?? null, 'categorySelection', 'sDEF');
         $catExclusive = $catExclusive ?: trim((string)$this->cObj->stdWrap(
-            $this->conf['categorySelection'],
+            $this->conf['categorySelection'] ?? '',
             $this->conf['categorySelection.'] ?? false
         ));
         // ignore cat selection if categoryMode isn't set
-        $this->catExclusive = $this->config['categoryMode'] ? $catExclusive : 0;
+        $this->catExclusive = ($this->config['categoryMode'] ?? null) ? $catExclusive : 0;
 
         $this->catExclusive = $this->helpers->checkRecords($this->catExclusive);
         // store the actually selected categories because we need them for the comparison in categoryMode 2 and -2
